@@ -72,13 +72,15 @@ pub trait Transport<T: Types> {
 /// This trait is responsible to split the [`Proposal`] into several `Part`s,
 /// each part for every Acceptor, and to rebuild a [`Proposal`] from `Part`s
 pub trait Distribute<T: Types> {
-    /// Distribute a value to several [`Acceptor`];
+    /// Distribute a value to several [`Acceptor`]s;
     fn distribute<'a>(
         &mut self,
         value: T::Value,
         acceptor_ids: impl IntoIterator<Item = &'a T::AcceptorId>,
     ) -> Vec<T::Part>;
 
+    /// `rebuild` is the reverse operation of `distribute`:
+    /// It rebuilds a value from parts that are accepted by [`Acceptor`]s.
     fn rebuild<'a>(
         &mut self,
         x: impl IntoIterator<Item = (&'a T::AcceptorId, &'a T::Part)>,
@@ -90,11 +92,23 @@ pub trait QuorumSet<T: Types> {
     fn is_write_quorum(&self, acceptor_ids: impl IntoIterator<Item = T::AcceptorId>) -> bool;
 }
 
+/// Abstract Paxos
 pub struct APaxos<T: Types> {
+    /// Acceptors stores value or part of the value that is proposed by a
+    /// [`Proposer`].
+    ///
+    /// [`Proposer`]: crate::apaxos::proposer::Proposer
     acceptors: BTreeMap<T::AcceptorId, ()>,
 
+    /// Quorum set defines quorums for read and write.
+    ///
+    /// A value that is accepted by a quorum is considered committed.
     quorum_set: T::QuorumSet,
-    rebuild: T::Distribute,
+
+    /// Defines how to distribute a parts of a value to several [`Acceptor`]
+    distribute: T::Distribute,
+
+    /// Transport for sending and receiving messages.
     transport: T::Transport,
 }
 
@@ -102,7 +116,7 @@ impl<T: Types> APaxos<T> {
     pub fn new(
         acceptors: impl IntoIterator<Item = T::AcceptorId>,
         quorum_set: T::QuorumSet,
-        rebuild: T::Distribute,
+        distribute: T::Distribute,
         transport: T::Transport,
     ) -> Self {
         let acceptors = acceptors.into_iter().map(|id| (id, ())).collect();
@@ -110,7 +124,7 @@ impl<T: Types> APaxos<T> {
         Self {
             acceptors,
             quorum_set,
-            rebuild,
+            distribute,
             transport,
         }
     }

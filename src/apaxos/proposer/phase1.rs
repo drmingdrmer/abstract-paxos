@@ -97,7 +97,7 @@ impl<'a, T: Types> Phase1<'a, T> {
             .iter()
             .filter(|(_, a)| a.proposal.propose_time == propose_time)
             .map(|(id, a)| (id, &a.proposal.data));
-        let rebuilt_value = apaxos.rebuild.rebuild(it);
+        let rebuilt_value = apaxos.distribute.rebuild(it);
         rebuilt_value.map(|x| Proposal::new(propose_time, x))
     }
 }

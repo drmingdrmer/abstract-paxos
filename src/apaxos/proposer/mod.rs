@@ -8,6 +8,8 @@ use crate::Types;
 mod phase1;
 mod phase2;
 
+/// Proposer proposes a value and tries to commit it by getting it accepted by a
+/// quorum of Acceptors. It does so by running Phase1 and Phase2.
 pub struct Proposer<'a, T: Types> {
     apaxos: &'a mut APaxos<T>,
     time: T::Time,

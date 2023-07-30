@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 
 use crate::apaxos::greater_equal::GreaterEqual;
+use crate::commonly_used::distribute::Partitioned;
 use crate::commonly_used::quorum_set::all::All;
-use crate::commonly_used::rebuild::Partitioned;
 use crate::commonly_used::transport::DirectCall;
 use crate::Types;
 
@@ -76,8 +76,8 @@ mod tests {
 
     use crate::apaxos::acceptor::Acceptor;
     use crate::apaxos::proposer::Proposer;
+    use crate::commonly_used::distribute::Partitioned;
     use crate::commonly_used::quorum_set::all::All;
-    use crate::commonly_used::rebuild::Partitioned;
     use crate::commonly_used::transport::DirectCall;
     use crate::implementations::two_pc::TwoPC;
     use crate::implementations::two_pc::TwoPCTime;
@@ -94,9 +94,9 @@ mod tests {
 
         let quorum_set = All::new(acceptor_ids);
         let transport = DirectCall::new(acceptors.clone());
-        let rebuild = Partitioned::<TwoPC>::new(acceptor_ids);
+        let distribute = Partitioned::<TwoPC>::new(acceptor_ids);
 
-        let mut apaxos = APaxos::<TwoPC>::new(acceptor_ids, quorum_set, rebuild, transport);
+        let mut apaxos = APaxos::<TwoPC>::new(acceptor_ids, quorum_set, distribute, transport);
 
         let t1 = TwoPCTime::new(1);
         let tx1_data = btreemap! {1u64=>s("hello"), 2u64=>s("world"), 3u64=>s("")};

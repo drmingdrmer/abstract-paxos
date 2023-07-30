@@ -7,8 +7,8 @@
 //! - To rebuild a **maybe committed** value with [`Distribute`], it just use
 //!   the one with max `v_ballot`.
 
+use crate::commonly_used::distribute::Mirrored;
 use crate::commonly_used::quorum_set::majority::Majority;
-use crate::commonly_used::rebuild::Mirrored;
 use crate::commonly_used::transport::DirectCall;
 use crate::Types;
 
@@ -31,8 +31,8 @@ mod tests {
 
     use crate::apaxos::acceptor::Acceptor;
     use crate::apaxos::proposer::Proposer;
+    use crate::commonly_used::distribute::Mirrored;
     use crate::commonly_used::quorum_set::majority::Majority;
-    use crate::commonly_used::rebuild::Mirrored;
     use crate::commonly_used::transport::DirectCall;
     use crate::implementations::paxos::Paxos;
     use crate::APaxos;
@@ -50,9 +50,9 @@ mod tests {
 
         let quorum_set = Majority::new(acceptor_ids);
         let transport = DirectCall::new(acceptors.clone());
-        let rebuild = Mirrored::<Paxos>::new();
+        let distribute = Mirrored::<Paxos>::new();
 
-        let mut apaxos = APaxos::<Paxos>::new(acceptor_ids, quorum_set, rebuild, transport);
+        let mut apaxos = APaxos::<Paxos>::new(acceptor_ids, quorum_set, distribute, transport);
 
         let mut proposer = Proposer::new(&mut apaxos, 5, "hello".to_string());
         let committed = proposer.run();

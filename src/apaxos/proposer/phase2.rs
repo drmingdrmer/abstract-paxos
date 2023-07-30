@@ -25,7 +25,7 @@ impl<'a, T: Types> Phase2<'a, T> {
         let mut sent = 0;
 
         let acceptor_ids = apaxos.acceptors.keys();
-        let parts = apaxos.rebuild.distribute(self.decided.data.clone(), acceptor_ids.clone());
+        let parts = apaxos.distribute.distribute(self.decided.data.clone(), acceptor_ids.clone());
 
         let id_parts = acceptor_ids.zip(parts);
 
