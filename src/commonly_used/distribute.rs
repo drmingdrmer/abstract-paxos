@@ -70,11 +70,11 @@ impl<T: Types> Partitioned<T> {
     }
 }
 
-impl<AID, P, T: Types<Value = BTreeMap<AID, P>, AcceptorId = AID, Part = P>> Distribute<T>
-    for Partitioned<T>
+impl<AID, P, T> Distribute<T> for Partitioned<T>
 where
     AID: AcceptorId,
     P: Value,
+    T: Types<AcceptorId = AID, Part = P, Value = BTreeMap<AID, P>>,
 {
     fn distribute<'a>(
         &mut self,
@@ -86,10 +86,10 @@ where
 
     fn rebuild<'a>(
         &mut self,
-        vs: impl IntoIterator<Item = (&'a T::AcceptorId, &'a T::Part)>,
+        value_parts: impl IntoIterator<Item = (&'a T::AcceptorId, &'a T::Part)>,
     ) -> Option<T::Value> {
         let vs: BTreeMap<T::AcceptorId, T::Part> =
-            vs.into_iter().map(|(id, v)| (*id, v.clone())).collect::<BTreeMap<_, _>>();
+            value_parts.into_iter().map(|(id, v)| (*id, v.clone())).collect::<BTreeMap<_, _>>();
 
         let keys = vs.keys().copied().collect::<BTreeSet<_>>();
         if keys != self.acceptor_ids {

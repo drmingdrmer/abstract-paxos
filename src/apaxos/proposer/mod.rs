@@ -17,6 +17,8 @@ pub struct Proposer<'a, T: Types> {
 }
 
 impl<'a, T: Types> Proposer<'a, T> {
+    /// Create an instance of [`APaxos`] that tries to commit `value` at `time`
+    /// to the distributed system.
     pub fn new(apaxos: &'a mut APaxos<T>, time: T::Time, value: T::Value) -> Self {
         Self {
             apaxos,
@@ -32,6 +34,7 @@ impl<'a, T: Types> Proposer<'a, T> {
         committed
     }
 
+    // TODO: phase-1-revert
     fn new_phase1(&mut self) -> Phase1<T> {
         Phase1 {
             apaxos: &mut self.apaxos,

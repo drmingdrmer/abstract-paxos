@@ -1,6 +1,7 @@
 # Abstract-Paxos
 
-Abstract-Paxos unifies well-known distributed consensus algorithms (Paxos, Raft, 2PC, etc.) into a single approach.
+Abstract-Paxos unifies well-known distributed consensus algorithms (Paxos, Raft,
+2PC, etc.) into a single approach.
 
 -   V1(中文): [abstract-paxos-v1-cn](doc/built/zhihu/v1-cn.md).
 
@@ -8,6 +9,10 @@ Abstract-Paxos unifies well-known distributed consensus algorithms (Paxos, Raft,
     - Describes classic Paxos and Raft using Abstract-Paxos.
 
 # Project Status
+
+-   **2023-08-01**: It is meanwhile an **experimental** project that aims to
+    simplify the understanding and implementation of distributed consensus and
+    is **NOT** ready for production use.
 
 This repository includes the core of Abstract-Paxos and demo examples that
 showcase how to implement various distributed consensus algorithms using

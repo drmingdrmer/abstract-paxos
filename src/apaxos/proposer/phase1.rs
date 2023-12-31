@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::collections::BTreeSet;
 
 use crate::apaxos::accepted::Accepted;
 use crate::apaxos::greater_equal::GreaterEqual;
@@ -17,7 +16,12 @@ pub struct Phase1<'a, T: Types> {
     pub time: T::Time,
 
     /// The set of acceptors that granted the [`Proposer`]'s [`Phase1`] request.
-    pub granted: BTreeSet<T::AcceptorId>,
+    ///
+    /// The value is the `previous` [`Time`] before an acceptor grants the
+    /// [`Proposer`]'s phase-1 request.
+    ///
+    /// These `previous` [`Time`]s are used to revert the [`Acceptor`]'s time.
+    pub granted: BTreeMap<T::AcceptorId, T::Time>,
 
     /// The value part that the acceptor has accepted.
     ///
@@ -40,16 +44,16 @@ impl<'a, T: Types> Phase1<'a, T> {
         let mut is_quorum = false;
 
         for _ in 0..sent {
-            let (target, a) = self.apaxos.transport.recv_phase1_reply();
+            let (target, (prev_time, a)) = self.apaxos.transport.recv_phase1_reply();
             dbg!("received phase-1 reply", &target, &a);
             if a.time != self.time {
-                // Phase-2 request is rejected.
+                // Phase-1 request is rejected.
                 continue;
             }
 
-            self.granted.insert(target);
+            self.granted.insert(target, prev_time);
             is_quorum =
-                is_quorum || self.apaxos.quorum_set.is_read_quorum(self.granted.iter().cloned());
+                is_quorum || self.apaxos.quorum_set.is_read_quorum(self.granted.keys().cloned());
 
             if let Some(accepted) = a.accepted {
                 if accepted.accept_time.greater_equal(&max_accept_time) {

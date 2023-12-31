@@ -11,6 +11,7 @@ pub struct Accepted<T: Types> {
     /// value.
     pub accept_time: T::Time,
 
+    // TODO: rename to Fragment
     /// The proposal data that is accepted by the [`Acceptor`].
     pub proposal: Proposal<T, T::Part>,
 }

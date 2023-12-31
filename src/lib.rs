@@ -55,7 +55,7 @@ pub trait Types: Debug + Clone + Sized + 'static {
 
 pub trait Transport<T: Types> {
     fn send_phase1_request(&mut self, target: T::AcceptorId, t: T::Time);
-    fn recv_phase1_reply(&mut self) -> (T::AcceptorId, Acceptor<T>);
+    fn recv_phase1_reply(&mut self) -> (T::AcceptorId, (T::Time, Acceptor<T>));
 
     fn send_phase2_request(
         &mut self,

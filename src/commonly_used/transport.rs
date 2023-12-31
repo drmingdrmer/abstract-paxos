@@ -10,7 +10,7 @@ use crate::Types;
 pub struct DirectCall<T: Types> {
     acceptors: BTreeMap<T::AcceptorId, Acceptor<T>>,
 
-    p1_replies: VecDeque<(T::AcceptorId, Acceptor<T>)>,
+    p1_replies: VecDeque<(T::AcceptorId, (T::Time, Acceptor<T>))>,
     p2_replies: VecDeque<(T::AcceptorId, bool)>,
 }
 
@@ -32,7 +32,7 @@ impl<T: Types> Transport<T> for DirectCall<T> {
         self.p1_replies.push_back((target, reply));
     }
 
-    fn recv_phase1_reply(&mut self) -> (T::AcceptorId, Acceptor<T>) {
+    fn recv_phase1_reply(&mut self) -> (T::AcceptorId, (T::Time, Acceptor<T>)) {
         self.p1_replies.pop_front().unwrap()
     }
 

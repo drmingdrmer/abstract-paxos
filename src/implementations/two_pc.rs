@@ -45,6 +45,7 @@ impl Types for TwoPC {
 /// TwoPCTime is not transitive and can form a cycle.
 #[derive(Clone, Copy, Debug, Default)]
 #[derive(PartialEq, Eq)]
+#[derive(Hash)]
 struct TwoPCTime {
     txn_id: u64,
     locked: bool,
