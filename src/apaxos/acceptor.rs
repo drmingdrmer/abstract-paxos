@@ -17,21 +17,21 @@ pub struct Acceptor<T: Types> {
     ///
     /// The **maximal** is the last time it has seen so far, i.e., the current
     /// time.
-    pub store: Map<T::Time, T::Part>,
+    pub store: Map<T::Time, Option<T::Part>>,
 
     /// The time it has seen so far, i.e., the current time.
+    #[deprecated(note = "use `store` instead")]
     pub time: T::Time,
 
     /// The state that is accepted by this [`Acceptor`].
+    #[deprecated(note = "use `store` instead")]
     pub accepted: Option<Accepted<T>>,
 }
 
 // TODO: use Valid<Acceptor<T>> instead of Acceptor<T>
 impl<T: Types> Validate for Acceptor<T> {
     fn validate(&self) -> Result<(), Box<dyn Error>> {
-        if let Some(accepted) = &self.accepted {
-            validit::be_true!(self.time.greater_equal(&accepted.accept_time));
-        }
+        // TODO: valid time chain
         Ok(())
     }
 }
@@ -67,49 +67,49 @@ impl<T: Types> Acceptor<T> {
     /// conflicting votes(otherwise other [`Proposer`] can not proceed). But
     /// **Classic Paxos** does not have to revert the `Time` but it could.
     pub(crate) fn handle_phase1_request(&mut self, now: T::Time) -> (T::Time, Self) {
-        dbg!("handle_phase1_request", now, self.time);
-        dbg!(now.greater_equal(&self.time));
+        dbg!("handle_phase1_request", now, &self.store);
+        dbg!(self.store.is_maximal(&now));
 
-        let now = self.time;
-
-        if now.greater_equal(&self.time) {
-            self.time = now;
+        if self.store.is_maximal(&now) {
+            let _ = self.store.try_insert(now, None);
         }
 
         (now, self.clone())
     }
 
-    /// Revert the `Time` to a previous one if it is still the same
+    /// Revert the `Time` if it is still a **maximal**.
     ///
     /// The proposer sending phase1-revert request must ensure no phase-2 is
     /// sent, otherwise consensus is not guaranteed.
     ///
     /// It returns a `bool` indicating whether the time is reverted.
-    pub(crate) fn handle_phase1_revert_request(&mut self, now: T::Time, prev: T::Time) -> bool {
-        dbg!("handle_phase1_revert_request", now, prev, self.time);
+    pub(crate) fn handle_phase1_revert_request(&mut self, t: T::Time) -> bool {
+        let maximals = self.store.maximals().collect::<Vec<_>>();
+        dbg!("handle_phase1_revert_request", t, maximals);
 
         // Revert the time to a previous one if it is still the same
-        if now == self.time {
-            self.time = prev;
+        if self.store.is_maximal(&t) {
+            let _ = self.store.remove(&t);
+            // Reverting it twice, it is still valid.
             true
         } else {
+            // There is some Time that is greater than `t`, can not revert.
             false
         }
     }
 
-    pub(crate) fn handle_phase2_request(
-        &mut self,
-        t: T::Time,
-        proposal: Proposal<T, T::Part>,
-    ) -> bool {
-        dbg!("handle_phase2_request", t);
-        if t.greater_equal(&self.time) {
-            self.time = t;
-            self.accepted = Some(Accepted {
-                accept_time: t,
-                proposal,
-            });
+    pub(crate) fn handle_phase2_request(&mut self, data: Map<T::Time, Option<T::Part>>) -> bool {
+        dbg!("handle_phase2_request", data);
 
+        let maximals = data.maximals().collect::<Vec<_>>();
+        dbg!("handle_phase2_request", maximals);
+
+        assert_eq!(maximals.len(), 1);
+
+        let t = maximals[0].0;
+
+        if self.store.is_maximal(&t) {
+            self.store.merge(data);
             true
         } else {
             false

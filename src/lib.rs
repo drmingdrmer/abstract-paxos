@@ -1,4 +1,5 @@
 #![feature(associated_type_defaults)]
+#![feature(map_try_insert)]
 
 pub mod apaxos;
 pub mod commonly_used;
@@ -11,6 +12,7 @@ use apaxos::proposal::Proposal;
 use apaxos::ptime::Time;
 
 use crate::apaxos::acceptor::Acceptor;
+use crate::apaxos::greater_equal_map::Map;
 
 pub trait AcceptorId: Debug + Clone + Copy + Ord + 'static {}
 
