@@ -12,7 +12,7 @@ use apaxos::proposal::Proposal;
 use apaxos::ptime::Time;
 
 use crate::apaxos::acceptor::Acceptor;
-use crate::apaxos::greater_equal_map::Map;
+use crate::apaxos::history::mono_history::MonoHistory;
 
 pub trait AcceptorId: Debug + Clone + Copy + Ord + 'static {}
 
@@ -49,10 +49,12 @@ pub trait Types: Debug + Clone + Sized + 'static {
 
     /// The network transport for sending and receiving messages.
     type Transport: Transport<Self>;
+}
 
-    /// The distribution algorithm for distributing a value to several acceptors
-    /// and for rebuilding the value from accepted value parts.
-    type Distribute: Distribute<Self>;
+pub trait System {
+    type Types: Types;
+
+    type MonoHistory: MonoHistory<Self::Types>;
 }
 
 pub trait Transport<T: Types> {
@@ -66,27 +68,6 @@ pub trait Transport<T: Types> {
         proposal: Proposal<T, T::Part>,
     );
     fn recv_phase2_reply(&mut self) -> (T::AcceptorId, bool);
-}
-
-/// Defines the distribution policy for storing portions of a value on several
-/// Acceptor-s.
-///
-/// This trait is responsible to split the [`Proposal`] into several `Part`s,
-/// each part for every Acceptor, and to rebuild a [`Proposal`] from `Part`s
-pub trait Distribute<T: Types> {
-    /// Distribute a value to several [`Acceptor`]s;
-    fn distribute<'a>(
-        &mut self,
-        value: T::Value,
-        acceptor_ids: impl IntoIterator<Item = &'a T::AcceptorId>,
-    ) -> Vec<T::Part>;
-
-    /// `rebuild` is the reverse operation of `distribute`:
-    /// It rebuilds a value from parts that are accepted by [`Acceptor`]s.
-    fn rebuild<'a>(
-        &mut self,
-        x: impl IntoIterator<Item = (&'a T::AcceptorId, &'a T::Part)>,
-    ) -> Option<T::Value>;
 }
 
 pub trait QuorumSet<T: Types> {
@@ -107,9 +88,6 @@ pub struct APaxos<T: Types> {
     /// A value that is accepted by a quorum is considered committed.
     quorum_set: T::QuorumSet,
 
-    /// Defines how to distribute a parts of a value to several [`Acceptor`]
-    distribute: T::Distribute,
-
     /// Transport for sending and receiving messages.
     transport: T::Transport,
 }
@@ -118,7 +96,6 @@ impl<T: Types> APaxos<T> {
     pub fn new(
         acceptors: impl IntoIterator<Item = T::AcceptorId>,
         quorum_set: T::QuorumSet,
-        distribute: T::Distribute,
         transport: T::Transport,
     ) -> Self {
         let acceptors = acceptors.into_iter().map(|id| (id, ())).collect();
@@ -126,7 +103,6 @@ impl<T: Types> APaxos<T> {
         Self {
             acceptors,
             quorum_set,
-            distribute,
             transport,
         }
     }

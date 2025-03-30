@@ -4,7 +4,6 @@ use crate::apaxos::accepted::Accepted;
 use crate::apaxos::greater_equal::GreaterEqual;
 use crate::apaxos::proposal::Proposal;
 use crate::APaxos;
-use crate::Distribute;
 use crate::QuorumSet;
 use crate::Transport;
 use crate::Types;
