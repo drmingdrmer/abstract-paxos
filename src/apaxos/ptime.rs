@@ -1,6 +1,11 @@
+#[cfg(doc)]
+use std::collections::HashMap;
 use std::fmt::Debug;
+use std::hash::Hash;
 
 use crate::apaxos::greater_equal::GreaterEqual;
+#[cfg(doc)]
+use crate::apaxos::history::mono_history::MonoHistory;
 
 /// Pseudo time that is used in a distributed system.
 ///
@@ -17,9 +22,15 @@ use crate::apaxos::greater_equal::GreaterEqual;
 /// See: [DAG]
 /// See: [Topological-order]
 ///
+/// - [`Time`] is [`Hash`] because it is used to **not uniquely** index the
+///   [`MonoHistory`] in a [`HashMap`]
+///
 /// [Partially-Ordered-set]: https://en.wikipedia.org/wiki/Partially_ordered_set
 /// [DAG]: https://en.wikipedia.org/wiki/Directed_acyclic_graph
 /// [Topological-order]: https://en.wikipedia.org/wiki/Topological_sorting
-pub trait Time: Default + Debug + Clone + Copy + PartialEq + Eq + GreaterEqual + 'static {}
+pub trait Time: Default + Debug + Clone + Copy + PartialEq + Eq + GreaterEqual + 'static
+where Self: Hash
+{
+}
 
 impl<T> Time for T where T: Default + Debug + Clone + Copy + PartialEq + Eq + GreaterEqual + 'static {}

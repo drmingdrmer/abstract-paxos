@@ -1,10 +1,12 @@
 use std::collections::BTreeSet;
+use std::collections::HashMap;
 use std::collections::HashSet;
 
 use binary_compare::BinaryCompare;
 use compatible::Compatible;
 use mono_history::MonoHistory;
 
+use crate::aliases::MonoHistories;
 use crate::quorum_set::QuorumSet;
 use crate::System;
 use crate::Types;
@@ -31,12 +33,12 @@ pub trait Distributed<S: System> {
 
     fn get_acceptor(&self, id: &S::Types::AcceptorId) -> Self::Acceptor;
 
-    fn read(&self) -> HashSet<S::MonoHistory> {
+    fn read(&self) -> MonoHistories<S> {
         let targets = self.get_quorum_set().get_read_quorum();
         self.read_from_nodes(&targets)
     }
 
-    fn read_from_nodes(&self, nodes: &[S::Types::AcceptorId]) -> HashSet<S::MonoHistory> {
+    fn read_from_nodes(&self, nodes: &[S::Types::AcceptorId]) -> MonoHistories<S> {
         let mut monos = Vec::new();
         for node in nodes {
             let acceptor = self.get_acceptor(node);

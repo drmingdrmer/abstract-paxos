@@ -1,12 +1,15 @@
 #![feature(associated_type_defaults)]
 #![feature(map_try_insert)]
 
+pub mod aliases;
 pub mod apaxos;
 pub mod commonly_used;
 pub mod implementations;
 mod quorum_set;
+pub(crate) mod sealed;
 
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::fmt::Debug;
 
 use apaxos::proposal::Proposal;
@@ -15,6 +18,7 @@ use quorum_set::QuorumSet;
 
 use crate::apaxos::acceptor::Acceptor;
 use crate::apaxos::history::mono_history::MonoHistory;
+use crate::sealed::Sealed;
 
 pub trait AcceptorId: Debug + Clone + Copy + Ord + 'static {}
 
@@ -53,6 +57,8 @@ pub trait Types: Debug + Clone + Sized + 'static {
     type Transport: Transport<Self>;
 }
 
+/// A [`System`] is type container that contains derived types from [`Types`].
+/// while [`Types`] contains only primitive types.
 pub trait System {
     type Types: Types;
 

@@ -1,5 +1,8 @@
+use std::collections::HashMap;
 use std::collections::HashSet;
+use std::hash::Hash;
 
+use crate::aliases::MonoHistories;
 use crate::apaxos::history::binary_compare::BinaryCompare;
 use crate::apaxos::history::compatible::Compatible;
 use crate::Types;
@@ -44,20 +47,22 @@ where
 
     /// Observe a multiverse and collapse it into a universe, by eliminating
     /// conflicting histories.
-    fn observe(mut monos: HashSet<Self>) -> HashSet<Self> {
-        let mut observed = HashSet::new();
+    fn observe(mut monos: HashMap<T::Time, Self>) -> HashMap<T::Time, Self> {
+        let mut observed = HashMap::new();
 
         while !monos.is_empty() {
-            let mut candidate = monos.iter().next().unwrap();
+            let (_, mut candidate) = monos.iter().next().unwrap();
 
             loop {
-                if let Some(greater_conflict) = candidate.find_greater_conflict(monos.iter()) {
+                if let Some(greater_conflict) = candidate.find_greater_conflict(monos.values()) {
                     candidate = greater_conflict;
                 } else {
-                    let x = monos.remove(candidate);
-                    observed.insert(x);
+                    // Safe unwrap: it's greater than another thus it can not be empty.
+                    let t = candidate.max_time().unwrap();
+                    let x = monos.remove(&t);
+                    observed.insert(t, x);
 
-                    monos.retain(|mono| mono.is_compatible_with(candidate));
+                    monos.retain(|t, mono| mono.is_compatible_with(candidate));
                     break;
                 }
             }
