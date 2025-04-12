@@ -3,8 +3,8 @@ use std::collections::BTreeMap;
 use crate::apaxos::accepted::Accepted;
 use crate::apaxos::greater_equal::GreaterEqual;
 use crate::apaxos::proposal::Proposal;
+use crate::quorum_set::QuorumSet;
 use crate::APaxos;
-use crate::QuorumSet;
 use crate::Transport;
 use crate::Types;
 

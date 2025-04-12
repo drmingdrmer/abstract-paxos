@@ -4,12 +4,14 @@
 pub mod apaxos;
 pub mod commonly_used;
 pub mod implementations;
+mod quorum_set;
 
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 
 use apaxos::proposal::Proposal;
 use apaxos::ptime::Time;
+use quorum_set::QuorumSet;
 
 use crate::apaxos::acceptor::Acceptor;
 use crate::apaxos::history::mono_history::MonoHistory;
@@ -68,11 +70,6 @@ pub trait Transport<T: Types> {
         proposal: Proposal<T, T::Part>,
     );
     fn recv_phase2_reply(&mut self) -> (T::AcceptorId, bool);
-}
-
-pub trait QuorumSet<T: Types> {
-    fn is_read_quorum(&self, acceptor_ids: impl IntoIterator<Item = T::AcceptorId>) -> bool;
-    fn is_write_quorum(&self, acceptor_ids: impl IntoIterator<Item = T::AcceptorId>) -> bool;
 }
 
 /// Abstract Paxos

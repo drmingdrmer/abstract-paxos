@@ -5,6 +5,7 @@ use binary_compare::BinaryCompare;
 use compatible::Compatible;
 use mono_history::MonoHistory;
 
+use crate::quorum_set::QuorumSet;
 use crate::System;
 use crate::Types;
 
@@ -24,29 +25,31 @@ where Self: Compatible + 'static
 pub trait Distributed<S: System> {
     type Acceptor;
 
-    fn get_read_quorum(&self) -> Vec<S::Types::AcceptorId>;
+    type QuorumSet: QuorumSet<S::Types>;
 
-    fn get_write_quorum(&self) -> Vec<S::Types::AcceptorId>;
+    fn get_quorum_set(&self) -> &Self::QuorumSet;
 
-    fn get_acceptor(&self, id: S::Types::AcceptorId) -> Self::Acceptor;
+    fn get_acceptor(&self, id: &S::Types::AcceptorId) -> Self::Acceptor;
 
     fn read(&self) -> HashSet<S::MonoHistory> {
-        let targets = self.get_read_quorum();
-
+        let targets = self.get_quorum_set().get_read_quorum();
         self.read_from_nodes(&targets)
     }
 
     fn read_from_nodes(&self, nodes: &[S::Types::AcceptorId]) -> HashSet<S::MonoHistory> {
         let mut monos = Vec::new();
         for node in nodes {
-            monos.extend(node.read());
+            let acceptor = self.get_acceptor(node);
+            let fu = acceptor.read();
+            monos.extend(acceptor.read());
         }
         monos
     }
 
     fn write_to_nodes(&mut self, targets: &[S::Types::AcceptorId], h: S::MonoHistory) {
         for node in targets {
-            node.write(h.clone());
+            let acceptor = self.get_acceptor(node);
+            acceptor.write(h.clone());
         }
     }
 }

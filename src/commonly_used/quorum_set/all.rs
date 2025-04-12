@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use crate::QuorumSet;
+use crate::quorum_set::QuorumSet;
 use crate::Types;
 
 /// All requires all acceptors to form a **quorum**.

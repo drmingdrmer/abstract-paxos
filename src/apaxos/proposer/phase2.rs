@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 
 use crate::apaxos::proposal::Proposal;
+use crate::quorum_set::QuorumSet;
 use crate::APaxos;
 use crate::Distribute;
-use crate::QuorumSet;
 use crate::Transport;
 use crate::Types;
 
