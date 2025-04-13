@@ -1,5 +1,6 @@
 #![feature(associated_type_defaults)]
 #![feature(map_try_insert)]
+extern crate core;
 
 pub mod aliases;
 pub mod apaxos;
@@ -7,9 +8,14 @@ pub mod commonly_used;
 pub mod implementations;
 mod quorum_set;
 pub(crate) mod sealed;
+mod system;
+
+pub mod acceptor;
+mod distributed;
+pub mod errors;
+mod universe;
 
 use std::collections::BTreeMap;
-use std::collections::HashMap;
 use std::fmt::Debug;
 
 use apaxos::proposal::Proposal;
@@ -55,14 +61,6 @@ pub trait Types: Debug + Clone + Sized + 'static {
 
     /// The network transport for sending and receiving messages.
     type Transport: Transport<Self>;
-}
-
-/// A [`System`] is type container that contains derived types from [`Types`].
-/// while [`Types`] contains only primitive types.
-pub trait System {
-    type Types: Types;
-
-    type MonoHistory: MonoHistory<Self::Types>;
 }
 
 pub trait Transport<T: Types> {

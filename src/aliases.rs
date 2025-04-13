@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::System;
+use crate::system::System;
 use crate::Types;
 
 pub type MonoHistories<S> =
