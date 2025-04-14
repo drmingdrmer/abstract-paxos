@@ -2,10 +2,10 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
 
+use crate::Types;
 use crate::aliases::MonoHistories;
 use crate::apaxos::history::binary_compare::BinaryCompare;
 use crate::apaxos::history::compatible::Compatible;
-use crate::Types;
 
 /// A history that contains at most one maximum time.
 ///
@@ -51,7 +51,7 @@ where
         let mut observed = HashMap::new();
 
         while !monos.is_empty() {
-            let (_, mut candidate) = monos.iter().next().unwrap();
+            let (_time, mut candidate) = monos.iter().next().unwrap();
 
             loop {
                 if let Some(greater_conflict) = candidate.find_greater_conflict(monos.values()) {
